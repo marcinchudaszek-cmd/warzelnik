@@ -1,4 +1,4 @@
-import type { Hop, Malt, Recipe, Yeast } from "@/types";
+import type { Hop, HopUse, Malt, Recipe, Yeast } from "@/types";
 import { getBoilMinutes, calcWater, getMashRatio } from "@/utils/brewCalc";
 
 function esc(s: string): string {
@@ -144,6 +144,187 @@ ${mashSteps}
   </RECIPE>
 </RECIPES>
 `;
+}
+
+// ── Import ────────────────────────────────────────────────────────
+
+function text(el: Element, tag: string): string {
+  return el.querySelector(`:scope > ${tag}`)?.textContent?.trim() ?? "";
+}
+
+function num(el: Element, tag: string): number {
+  const v = parseFloat(text(el, tag));
+  return Number.isFinite(v) ? v : 0;
+}
+
+function normalize(s: string): string {
+  return s
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/[^a-z0-9 ]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/** Aliasowe tokeny ułatwiające dopasowanie angielskich nazw do polskiej bazy. */
+const MALT_ALIASES: Record<string, string> = {
+  pilsner: "pilznenski",
+  pilsen: "pilznenski",
+  lager: "pilznenski",
+  vienna: "wiedenski",
+  munich: "monachijski-jasny",
+  wheat: "pszeniczny-jasny",
+  rye: "zytni",
+  chocolate: "czekoladowy",
+  black: "barwiacy",
+  roasted: "palony-jeczmien",
+  oats: "platki-owsiane",
+  oat: "platki-owsiane",
+  honey: "miod",
+  lactose: "laktoza",
+  sugar: "cukier-bialy",
+  candi: "cukier-kandyzowany-ciemny",
+  acidulated: "kwaskowy",
+  smoked: "wedzony",
+  melanoidin: "melanoidynowy",
+};
+
+function matchByName<T extends { id: string; name: string }>(name: string, items: T[]): T | undefined {
+  const n = normalize(name);
+  if (!n) return undefined;
+  const exact = items.find((i) => normalize(i.name) === n);
+  if (exact) return exact;
+  return items.find((i) => {
+    const ni = normalize(i.name);
+    return ni.includes(n) || n.includes(ni);
+  });
+}
+
+function matchMalt(name: string, colorSrm: number, isSugar: boolean, malts: Malt[]): Malt | undefined {
+  const byName = matchByName(name, malts);
+  if (byName) return byName;
+  for (const token of normalize(name).split(" ")) {
+    const alias = MALT_ALIASES[token];
+    if (alias) {
+      const m = malts.find((x) => x.id === alias);
+      if (m) return m;
+    }
+  }
+  // ostatnia deska ratunku: najbliższa barwa w odpowiedniej grupie
+  const ebc = colorSrm * 1.97;
+  const pool = malts.filter((m) => (isSugar ? m.type === "dodatek" : m.type !== "dodatek"));
+  return pool.reduce<Malt | undefined>(
+    (best, m) => (!best || Math.abs(m.ebc - ebc) < Math.abs(best.ebc - ebc) ? m : best),
+    undefined
+  );
+}
+
+function matchHop(name: string, alpha: number, hops: Hop[]): Hop | undefined {
+  const byName = matchByName(name, hops);
+  if (byName) return byName;
+  return hops.reduce<Hop | undefined>(
+    (best, h) => (!best || Math.abs(h.alpha - alpha) < Math.abs(best.alpha - alpha) ? h : best),
+    undefined
+  );
+}
+
+const XML_HOP_USE: Record<string, HopUse> = {
+  boil: "boil",
+  aroma: "whirlpool",
+  whirlpool: "whirlpool",
+  "dry hop": "dryhop",
+  "first wort": "boil",
+  mash: "boil",
+};
+
+export interface BeerXMLImportResult {
+  recipe: Recipe;
+  warnings: string[];
+}
+
+/** Parsuje pierwszą recepturę z dokumentu BeerXML, dopasowując składniki do lokalnej bazy. */
+export function parseBeerXML(
+  xmlText: string,
+  malts: Malt[],
+  hops: Hop[],
+  yeasts: Yeast[]
+): BeerXMLImportResult {
+  const doc = new DOMParser().parseFromString(xmlText, "application/xml");
+  if (doc.querySelector("parsererror")) throw new Error("Nieprawidłowy plik XML.");
+  const recipeEl = doc.querySelector("RECIPES > RECIPE, RECIPE");
+  if (!recipeEl) throw new Error("Nie znaleziono receptury w pliku BeerXML.");
+
+  const warnings: string[] = [];
+
+  const recipeMalts = [...recipeEl.querySelectorAll("FERMENTABLES > FERMENTABLE")].flatMap((f) => {
+    const name = text(f, "NAME");
+    const kg = num(f, "AMOUNT");
+    const isSugar = /sugar|extract|honey|syrup/i.test(text(f, "TYPE"));
+    const malt = matchMalt(name, num(f, "COLOR"), isSugar, malts);
+    if (!malt) {
+      warnings.push(`Pominięto składnik: ${name}`);
+      return [];
+    }
+    if (normalize(malt.name) !== normalize(name)) warnings.push(`„${name}” → ${malt.name}`);
+    return [{ maltId: malt.id, kg: Math.round(kg * 1000) / 1000 }];
+  });
+
+  const recipeHops = [...recipeEl.querySelectorAll("HOPS > HOP")].flatMap((h) => {
+    const name = text(h, "NAME");
+    const hop = matchHop(name, num(h, "ALPHA"), hops);
+    if (!hop) {
+      warnings.push(`Pominięto chmiel: ${name}`);
+      return [];
+    }
+    if (normalize(hop.name) !== normalize(name)) warnings.push(`„${name}” → ${hop.name}`);
+    const use = XML_HOP_USE[text(h, "USE").toLowerCase()] ?? "boil";
+    const timeMin = num(h, "TIME");
+    return [
+      {
+        hopId: hop.id,
+        grams: Math.round(num(h, "AMOUNT") * 1000),
+        time: use === "dryhop" ? Math.max(1, Math.round(timeMin / 1440)) : Math.round(timeMin),
+        use,
+      },
+    ];
+  });
+
+  const yeastEl = recipeEl.querySelector("YEASTS > YEAST");
+  let yeastId: string | null = null;
+  if (yeastEl) {
+    const name = text(yeastEl, "NAME");
+    const yeast = matchByName(name, yeasts);
+    if (yeast) {
+      yeastId = yeast.id;
+      if (normalize(yeast.name) !== normalize(name)) warnings.push(`„${name}” → ${yeast.name}`);
+    } else {
+      warnings.push(`Nie dopasowano drożdży: ${name}`);
+    }
+  }
+
+  const mashSteps = [...recipeEl.querySelectorAll("MASH_STEPS > MASH_STEP")].map((ms) => ({
+    name: text(ms, "NAME") || "Przerwa",
+    temp: Math.round(num(ms, "STEP_TEMP")),
+    minutes: Math.round(num(ms, "STEP_TIME")),
+  }));
+
+  const batchL = num(recipeEl, "BATCH_SIZE") || 20;
+  const recipe: Recipe = {
+    id: `r-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+    name: text(recipeEl, "NAME") || "Importowana receptura",
+    style: recipeEl.querySelector("STYLE > NAME")?.textContent?.trim() ?? "",
+    batchL: Math.round(batchL * 10) / 10,
+    efficiency: num(recipeEl, "EFFICIENCY") || 70,
+    boilMinutes: num(recipeEl, "BOIL_TIME") || undefined,
+    malts: recipeMalts,
+    hops: recipeHops,
+    yeastId,
+    mashSteps: mashSteps.length > 0 ? mashSteps : [{ name: "Zacieranie właściwe", temp: 66, minutes: 60 }],
+    notes: text(recipeEl, "NOTES"),
+  };
+
+  return { recipe, warnings };
 }
 
 export function downloadBeerXML(xml: string, recipeName: string) {

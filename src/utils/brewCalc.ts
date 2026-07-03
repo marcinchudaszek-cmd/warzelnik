@@ -132,6 +132,51 @@ export function formatGravity(g: number): string {
   return g.toFixed(3);
 }
 
+/** SG -> stopnie Plato (Blg). */
+export function sgToPlato(sg: number): number {
+  return -616.868 + 1111.14 * sg - 630.272 * sg * sg + 135.997 * sg * sg * sg;
+}
+
+/** Stopnie Plato (Blg) -> SG. */
+export function platoToSg(p: number): number {
+  return 1 + p / (258.6 - (p / 258.2) * 227.1);
+}
+
+/**
+ * Korekta wskazania hydrometru względem temperatury próbki.
+ * Formuła w °F, kalibracja domyślnie 20°C.
+ */
+export function correctHydrometer(measuredSg: number, sampleC: number, calibrationC = 20): number {
+  const f = (c: number) => c * 1.8 + 32;
+  const density = (tF: number) =>
+    1.00130346 - 0.000134722124 * tF + 0.00000204052596 * tF * tF - 0.00000000232820948 * tF * tF * tF;
+  return measuredSg * (density(f(sampleC)) / density(f(calibrationC)));
+}
+
+/** Resztkowe CO2 (obj.) po fermentacji w danej temperaturze (°C). */
+export function residualCO2(tempC: number): number {
+  const tF = tempC * 1.8 + 32;
+  return 3.0378 - 0.050062 * tF + 0.00026555 * tF * tF;
+}
+
+/** 1 objętość CO2 = 1,96 g/L; uzysk CO2 z grama cukru. */
+const CO2_G_PER_L_PER_VOL = 1.96;
+const SUGAR_CO2_YIELD: Record<"sacharoza" | "glukoza", number> = {
+  sacharoza: 0.514, // g CO2 / g cukru
+  glukoza: 0.444, // glukoza jednowodna
+};
+
+/** Gramy cukru na refermentację całej warki. */
+export function primingSugar(
+  batchL: number,
+  targetVols: number,
+  fermTempC: number,
+  sugar: "sacharoza" | "glukoza"
+): number {
+  const needed = Math.max(0, targetVols - residualCO2(fermTempC));
+  return (needed * CO2_G_PER_L_PER_VOL * batchL) / SUGAR_CO2_YIELD[sugar];
+}
+
 export function recipeStats(
   recipe: Recipe,
   maltById: Map<string, Malt>,

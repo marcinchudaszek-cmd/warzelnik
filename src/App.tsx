@@ -2,17 +2,19 @@ import { useState } from "react";
 import { BrewDayView } from "@/components/BrewDayView";
 import { IngredientsView } from "@/components/IngredientsView";
 import { RecipesView } from "@/components/RecipesView";
+import { ToolsView } from "@/components/ToolsView";
 import { SAMPLE_RECIPES } from "@/data/sampleRecipes";
 import type { BrewSession, Recipe } from "@/types";
 import { cn } from "@/utils/cn";
 import { useLocalStorage } from "@/utils/useLocalStorage";
 
-type View = "ingredients" | "recipes" | "brewday";
+type View = "ingredients" | "recipes" | "brewday" | "tools";
 
 const NAV: { id: View; label: string; icon: string }[] = [
   { id: "ingredients", label: "Składniki", icon: "🌾" },
   { id: "recipes", label: "Receptury", icon: "📖" },
   { id: "brewday", label: "Warzenie", icon: "🍺" },
+  { id: "tools", label: "Narzędzia", icon: "🧮" },
 ];
 
 export default function App() {
@@ -36,6 +38,7 @@ export default function App() {
         {view === "ingredients" && <IngredientsView />}
         {view === "recipes" && <RecipesView recipes={recipes} setRecipes={setRecipes} />}
         {view === "brewday" && <BrewDayView recipes={recipes} sessions={sessions} setSessions={setSessions} />}
+        {view === "tools" && <ToolsView />}
       </main>
 
       <nav className="fixed inset-x-0 bottom-0 z-20 border-t border-amber-200 bg-white/90 pb-[env(safe-area-inset-bottom)] backdrop-blur-sm">

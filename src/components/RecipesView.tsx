@@ -1,9 +1,9 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { HOPS } from "@/data/hops";
 import { MALTS } from "@/data/malts";
 import { YEASTS } from "@/data/yeasts";
 import type { HopUse, Recipe } from "@/types";
-import { downloadBeerXML, recipeToBeerXML } from "@/utils/beerxml";
+import { downloadBeerXML, parseBeerXML, recipeToBeerXML } from "@/utils/beerxml";
 import {
   calcWater,
   ebcToColor,
@@ -425,7 +425,23 @@ export function RecipesView({
   setRecipes: (next: Recipe[] | ((prev: Recipe[]) => Recipe[])) => void;
 }) {
   const [editingId, setEditingId] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const editing = recipes.find((r) => r.id === editingId);
+
+  const importFile = async (file: File) => {
+    try {
+      const { recipe, warnings } = parseBeerXML(await file.text(), MALTS, HOPS, YEASTS);
+      if (warnings.length > 0) {
+        recipe.notes = [recipe.notes, `Import BeerXML — dopasowania:\n${warnings.join("\n")}`]
+          .filter(Boolean)
+          .join("\n\n");
+      }
+      setRecipes((prev) => [recipe, ...prev]);
+      setEditingId(recipe.id);
+    } catch (err) {
+      alert(`Nie udało się zaimportować pliku: ${err instanceof Error ? err.message : err}`);
+    }
+  };
 
   if (editing) {
     return (
@@ -443,16 +459,35 @@ export function RecipesView({
 
   return (
     <div className="space-y-3">
-      <button
-        onClick={() => {
-          const r = emptyRecipe();
-          setRecipes((prev) => [r, ...prev]);
-          setEditingId(r.id);
-        }}
-        className="w-full rounded-2xl bg-amber-700 py-3 font-semibold text-white shadow-md transition-colors hover:bg-amber-800"
-      >
-        + Nowa receptura
-      </button>
+      <div className="flex gap-2">
+        <button
+          onClick={() => {
+            const r = emptyRecipe();
+            setRecipes((prev) => [r, ...prev]);
+            setEditingId(r.id);
+          }}
+          className="flex-1 rounded-2xl bg-amber-700 py-3 font-semibold text-white shadow-md transition-colors hover:bg-amber-800"
+        >
+          + Nowa receptura
+        </button>
+        <button
+          onClick={() => fileInputRef.current?.click()}
+          className="rounded-2xl border border-amber-300 bg-white/80 px-4 py-3 text-sm font-semibold text-amber-800 shadow-sm hover:bg-amber-50"
+        >
+          ⬆️ Import
+        </button>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".xml,application/xml,text/xml"
+          className="hidden"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) importFile(file);
+            e.target.value = "";
+          }}
+        />
+      </div>
 
       {recipes.length === 0 && (
         <p className="py-10 text-center text-sm text-stone-500">
