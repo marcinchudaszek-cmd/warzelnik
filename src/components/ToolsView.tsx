@@ -2,6 +2,7 @@ import { useState } from "react";
 import {
   calcABV,
   correctHydrometer,
+  parseGravityInput as parseGravity,
   platoToSg,
   primingSugar,
   residualCO2,
@@ -47,15 +48,6 @@ function Field({
 
 function Result({ children }: { children: React.ReactNode }) {
   return <div className="rounded-xl bg-amber-50 px-4 py-3 text-sm font-medium text-amber-900">{children}</div>;
-}
-
-/** "12.5" -> Blg, "1.050" -> SG; zwraca SG albo NaN. */
-function parseGravity(raw: string): number {
-  const v = parseFloat(raw.replace(",", "."));
-  if (!Number.isFinite(v) || v < 0) return NaN;
-  if (v > 1.2) return platoToSg(v); // potraktuj jako Blg
-  if (v >= 0.98) return v; // SG
-  return NaN;
 }
 
 function BlgSgConverter() {

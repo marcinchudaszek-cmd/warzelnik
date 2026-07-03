@@ -142,6 +142,15 @@ export function platoToSg(p: number): number {
   return 1 + p / (258.6 - (p / 258.2) * 227.1);
 }
 
+/** Interpretuje wpis użytkownika: „12.5" jako °Blg, „1.050" jako SG. Zwraca SG albo NaN. */
+export function parseGravityInput(raw: string): number {
+  const v = parseFloat(raw.replace(",", "."));
+  if (!Number.isFinite(v) || v < 0) return NaN;
+  if (v > 1.2) return platoToSg(v);
+  if (v >= 0.98) return v;
+  return NaN;
+}
+
 /**
  * Korekta wskazania hydrometru względem temperatury próbki.
  * Formuła w °F, kalibracja domyślnie 20°C.

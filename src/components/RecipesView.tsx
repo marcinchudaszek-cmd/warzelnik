@@ -373,12 +373,34 @@ function RecipeEditor({
         />
       </div>
 
-      <button
-        onClick={() => downloadBeerXML(recipeToBeerXML(recipe, maltById, hopById, yeastById), recipe.name)}
-        className="w-full rounded-2xl border border-amber-300 bg-white/80 py-3 text-sm font-semibold text-amber-800 shadow-sm hover:bg-amber-50"
-      >
-        ⬇️ Eksportuj do BeerXML
-      </button>
+      <div className="flex gap-2">
+        <button
+          onClick={() => {
+            const raw = prompt(`Docelowa objętość warki (obecnie ${recipe.batchL} L):`, String(recipe.batchL));
+            if (raw === null) return;
+            const target = parseFloat(raw.replace(",", "."));
+            if (!Number.isFinite(target) || target <= 0) {
+              alert("Podaj poprawną objętość w litrach.");
+              return;
+            }
+            const factor = target / recipe.batchL;
+            set({
+              batchL: Math.round(target * 10) / 10,
+              malts: recipe.malts.map((m) => ({ ...m, kg: Math.round(m.kg * factor * 200) / 200 })),
+              hops: recipe.hops.map((h) => ({ ...h, grams: Math.round(h.grams * factor) })),
+            });
+          }}
+          className="flex-1 rounded-2xl border border-amber-300 bg-white/80 py-3 text-sm font-semibold text-amber-800 shadow-sm hover:bg-amber-50"
+        >
+          ⚖️ Skaluj recepturę
+        </button>
+        <button
+          onClick={() => downloadBeerXML(recipeToBeerXML(recipe, maltById, hopById, yeastById), recipe.name)}
+          className="flex-1 rounded-2xl border border-amber-300 bg-white/80 py-3 text-sm font-semibold text-amber-800 shadow-sm hover:bg-amber-50"
+        >
+          ⬇️ Eksport BeerXML
+        </button>
+      </div>
     </div>
   );
 }

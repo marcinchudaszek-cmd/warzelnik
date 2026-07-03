@@ -3,7 +3,15 @@ import { HOPS } from "@/data/hops";
 import { MALTS } from "@/data/malts";
 import { YEASTS } from "@/data/yeasts";
 import type { BrewSession, Recipe } from "@/types";
-import { calcWater, getBoilMinutes, getMashRatio } from "@/utils/brewCalc";
+import {
+  calcABV,
+  calcWater,
+  getBoilMinutes,
+  getMashRatio,
+  parseGravityInput,
+  recipeStats,
+  sgToPlato,
+} from "@/utils/brewCalc";
 import { cn } from "@/utils/cn";
 
 const hopById = new Map(HOPS.map((h) => [h.id, h]));
@@ -227,12 +235,64 @@ function BoilAssistant({ recipe }: { recipe: Recipe }) {
   );
 }
 
+interface PlanStats {
+  og: number;
+  fg: number;
+  abv: number;
+}
+
+function PlanVsMeasured({ session, plan }: { session: BrewSession; plan: PlanStats }) {
+  const og = parseGravityInput(session.measuredOG);
+  const fg = parseGravityInput(session.measuredFG);
+  const rows: { label: string; plan: string; measured: string; delta: string }[] = [
+    {
+      label: "OG",
+      plan: plan.og.toFixed(3),
+      measured: Number.isFinite(og) ? og.toFixed(3) : "—",
+      delta: Number.isFinite(og) ? `${og >= plan.og ? "+" : ""}${((og - plan.og) * 1000).toFixed(0)} pkt` : "",
+    },
+    {
+      label: "FG",
+      plan: plan.fg.toFixed(3),
+      measured: Number.isFinite(fg) ? fg.toFixed(3) : "—",
+      delta: Number.isFinite(fg) ? `${fg >= plan.fg ? "+" : ""}${((fg - plan.fg) * 1000).toFixed(0)} pkt` : "",
+    },
+    {
+      label: "ABV",
+      plan: `${plan.abv.toFixed(1)}%`,
+      measured: Number.isFinite(og) && Number.isFinite(fg) && og > fg ? `${calcABV(og, fg).toFixed(1)}%` : "—",
+      delta: "",
+    },
+  ];
+  return (
+    <div className="rounded-xl border border-amber-200 bg-white p-3">
+      <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-stone-500">Plan vs pomiar</div>
+      <div className="grid grid-cols-4 gap-1 text-sm">
+        <div />
+        <div className="text-xs font-semibold text-stone-400">plan</div>
+        <div className="text-xs font-semibold text-stone-400">pomiar</div>
+        <div />
+        {rows.map((r) => (
+          <div key={r.label} className="contents">
+            <div className="font-semibold text-stone-600">{r.label}</div>
+            <div className="text-stone-500">{r.plan}</div>
+            <div className="font-semibold text-stone-800">{r.measured}</div>
+            <div className="text-xs text-stone-400">{r.delta}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function FermentationLog({
   session,
+  plan,
   onChange,
   onDelete,
 }: {
   session: BrewSession;
+  plan: PlanStats;
   onChange: (s: BrewSession) => void;
   onDelete: () => void;
 }) {
@@ -262,6 +322,7 @@ function FermentationLog({
 
   return (
     <div className="space-y-3">
+      <PlanVsMeasured session={session} plan={plan} />
       <div className="grid grid-cols-2 gap-2">
         <label className="text-xs text-stone-500">
           Zmierzone OG
@@ -370,7 +431,73 @@ function DryHopBox({ recipe }: { recipe: Recipe }) {
   );
 }
 
-type Phase = "mash" | "boil" | "ferment";
+function HistoryView({
+  recipes,
+  sessions,
+  setSessions,
+}: {
+  recipes: Recipe[];
+  sessions: BrewSession[];
+  setSessions: (next: BrewSession[] | ((prev: BrewSession[]) => BrewSession[])) => void;
+}) {
+  if (sessions.length === 0) {
+    return <p className="py-10 text-center text-sm text-stone-500">Brak zapisanych warek. 🍺</p>;
+  }
+  return (
+    <div className="space-y-3">
+      {sessions.map((s) => {
+        const recipe = recipes.find((r) => r.id === s.recipeId);
+        const og = parseGravityInput(s.measuredOG);
+        const fg = parseGravityInput(s.measuredFG);
+        const done = Number.isFinite(og) && Number.isFinite(fg) && og > fg;
+        return (
+          <div key={s.id} className="animate-fade-in rounded-2xl bg-white/80 p-4 shadow-sm">
+            <div className="flex items-start justify-between gap-2">
+              <div>
+                <h3 className="font-bold text-stone-800">{recipe?.name ?? "(usunięta receptura)"}</h3>
+                <p className="text-xs text-stone-500">
+                  nastawiono {s.startedAt} · {s.entries.length}{" "}
+                  {s.entries.length === 1 ? "wpis" : s.entries.length < 5 && s.entries.length > 1 ? "wpisy" : "wpisów"}
+                </p>
+              </div>
+              <span
+                className={cn(
+                  "shrink-0 rounded-lg px-2 py-1 text-xs font-bold",
+                  done ? "bg-green-100 text-green-800" : "bg-amber-100 text-amber-800"
+                )}
+              >
+                {done ? `${calcABV(og, fg).toFixed(1)}% ABV` : "w toku"}
+              </span>
+            </div>
+            <div className="mt-2 flex flex-wrap gap-2 text-xs text-stone-600">
+              {Number.isFinite(og) && (
+                <span className="rounded-md bg-stone-100 px-2 py-1">
+                  OG {og.toFixed(3)} ({sgToPlato(og).toFixed(1)} °Blg)
+                </span>
+              )}
+              {Number.isFinite(fg) && (
+                <span className="rounded-md bg-stone-100 px-2 py-1">
+                  FG {fg.toFixed(3)} ({sgToPlato(fg).toFixed(1)} °Blg)
+                </span>
+              )}
+            </div>
+            <button
+              onClick={() => {
+                if (confirm("Usunąć tę warkę z historii?"))
+                  setSessions((prev) => prev.filter((x) => x.id !== s.id));
+              }}
+              className="mt-2 text-xs text-red-400 hover:text-red-600"
+            >
+              Usuń
+            </button>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+type Phase = "mash" | "boil" | "ferment" | "history";
 
 export function BrewDayView({
   recipes,
@@ -395,9 +522,9 @@ export function BrewDayView({
 
   const session = sessions.find((s) => s.recipeId === recipe.id);
   const yeast = recipe.yeastId ? yeastById.get(recipe.yeastId) : undefined;
+  const plan = recipeStats(recipe, maltById, hopById, yeast?.attenuation ?? 75);
 
-  const ensureSession = () => {
-    if (session) return;
+  const startSession = () => {
     setSessions((prev) => [
       {
         id: `s-${Date.now()}`,
@@ -412,9 +539,10 @@ export function BrewDayView({
   };
 
   const phases: { id: Phase; label: string }[] = [
-    { id: "mash", label: "🌡️ Zacieranie" },
+    { id: "mash", label: "🌡️ Zacier" },
     { id: "boil", label: "🔥 Gotowanie" },
-    { id: "ferment", label: "🧫 Fermentacja" },
+    { id: "ferment", label: "🧫 Ferm." },
+    { id: "history", label: "📜 Historia" },
   ];
 
   return (
@@ -477,22 +605,40 @@ export function BrewDayView({
             </div>
           )}
           {session ? (
-            <FermentationLog
-              session={session}
-              onChange={(next) => setSessions((prev) => prev.map((s) => (s.id === next.id ? next : s)))}
-              onDelete={() => {
-                if (confirm("Usunąć dziennik tej warki?"))
-                  setSessions((prev) => prev.filter((s) => s.id !== session.id));
-              }}
-            />
+            <>
+              <FermentationLog
+                session={session}
+                plan={plan}
+                onChange={(next) => setSessions((prev) => prev.map((s) => (s.id === next.id ? next : s)))}
+                onDelete={() => {
+                  if (confirm("Usunąć dziennik tej warki?"))
+                    setSessions((prev) => prev.filter((s) => s.id !== session.id));
+                }}
+              />
+              <button
+                onClick={() => {
+                  if (confirm("Rozpocząć nową warkę tej receptury? Obecna trafi do historii."))
+                    startSession();
+                }}
+                className="w-full py-1 text-center text-xs font-medium text-amber-700 hover:text-amber-900"
+              >
+                ➕ Nowa warka tej receptury
+              </button>
+            </>
           ) : (
             <button
-              onClick={ensureSession}
+              onClick={startSession}
               className="w-full rounded-2xl bg-amber-700 py-3 font-semibold text-white shadow-md hover:bg-amber-800"
             >
               🍺 Rozpocznij dziennik fermentacji
             </button>
           )}
+        </div>
+      )}
+
+      {phase === "history" && (
+        <div className="animate-fade-in">
+          <HistoryView recipes={recipes} sessions={sessions} setSessions={setSessions} />
         </div>
       )}
     </div>
