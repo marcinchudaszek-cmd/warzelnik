@@ -46,11 +46,15 @@ export interface RecipeMalt {
   kg: number;
 }
 
+export type HopUse = "boil" | "whirlpool" | "dryhop";
+
 export interface RecipeHop {
   hopId: string;
   grams: number;
-  /** Czas gotowania w minutach (0 = na wyłączeniu / whirlpool) */
+  /** Gotowanie/whirlpool: minuty; chmielenie na zimno: dni */
   time: number;
+  /** Sposób użycia (brak = gotowanie, dla starszych receptur) */
+  use?: HopUse;
 }
 
 export interface MashStep {
@@ -67,6 +71,10 @@ export interface Recipe {
   batchL: number;
   /** Wydajność zacierania (%) */
   efficiency: number;
+  /** Czas gotowania (min); brak = 60 lub najdłuższe chmielenie */
+  boilMinutes?: number;
+  /** Stosunek wody zaciernej do zasypu (L/kg); brak = 3 */
+  mashRatio?: number;
   malts: RecipeMalt[];
   hops: RecipeHop[];
   yeastId: string | null;

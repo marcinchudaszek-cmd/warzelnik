@@ -14,16 +14,17 @@ export const SAMPLE_RECIPES: Recipe[] = [
       { maltId: "carapils", kg: 0.2 },
     ],
     hops: [
-      { hopId: "magnum", grams: 10, time: 60 },
-      { hopId: "cascade", grams: 25, time: 15 },
-      { hopId: "citra", grams: 30, time: 0 },
+      { hopId: "magnum", grams: 10, time: 60, use: "boil" },
+      { hopId: "cascade", grams: 25, time: 15, use: "boil" },
+      { hopId: "citra", grams: 30, time: 15, use: "whirlpool" },
+      { hopId: "citra", grams: 40, time: 4, use: "dryhop" },
     ],
     yeastId: "us-05",
     mashSteps: [
       { name: "Zacieranie właściwe", temp: 66, minutes: 60 },
       { name: "Mash-out", temp: 76, minutes: 10 },
     ],
-    notes: "Chmielenie na zimno: 40 g Citra na 4 dni pod koniec fermentacji.",
+    notes: "Chmielenie na zimno dodać pod koniec fermentacji burzliwej.",
   },
   {
     id: "sample-pils",

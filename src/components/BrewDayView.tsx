@@ -1,10 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { HOPS } from "@/data/hops";
+import { MALTS } from "@/data/malts";
 import { YEASTS } from "@/data/yeasts";
 import type { BrewSession, Recipe } from "@/types";
+import { calcWater, getBoilMinutes, getMashRatio } from "@/utils/brewCalc";
 import { cn } from "@/utils/cn";
 
 const hopById = new Map(HOPS.map((h) => [h.id, h]));
+const maltById = new Map(MALTS.map((m) => [m.id, m]));
 const yeastById = new Map(YEASTS.map((y) => [y.id, y]));
 
 function beep() {
@@ -102,7 +105,9 @@ function Timer({ minutes, label }: { minutes: number; label: string }) {
 }
 
 function BoilAssistant({ recipe }: { recipe: Recipe }) {
-  const boilMinutes = Math.max(60, ...recipe.hops.map((h) => h.time));
+  const boilMinutes = getBoilMinutes(recipe);
+  const boilHops = recipe.hops.filter((h) => (h.use ?? "boil") === "boil");
+  const whirlpoolHops = recipe.hops.filter((h) => h.use === "whirlpool");
   const [secondsLeft, setSecondsLeft] = useState(boilMinutes * 60);
   const [running, setRunning] = useState(false);
   const firedRef = useRef<Set<number>>(new Set());
@@ -119,7 +124,7 @@ function BoilAssistant({ recipe }: { recipe: Recipe }) {
       setSecondsLeft((prev) => {
         const next = Math.max(0, prev - 1);
         const minutesLeft = Math.ceil(next / 60);
-        for (const h of recipe.hops) {
+        for (const h of boilHops) {
           if (h.time > 0 && minutesLeft === h.time && next % 60 === 0 && !firedRef.current.has(h.time)) {
             firedRef.current.add(h.time);
             beep();
@@ -136,10 +141,11 @@ function BoilAssistant({ recipe }: { recipe: Recipe }) {
       });
     }, 1000);
     return () => clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [running, recipe.hops]);
 
   const minutesLeft = secondsLeft / 60;
-  const sorted = [...recipe.hops].sort((a, b) => b.time - a.time);
+  const sorted = [...boilHops].sort((a, b) => b.time - a.time);
 
   return (
     <div className="space-y-3">
@@ -195,6 +201,28 @@ function BoilAssistant({ recipe }: { recipe: Recipe }) {
           </div>
         );
       })}
+
+      {whirlpoolHops.length > 0 && (
+        <>
+          <div className="pt-1 text-xs font-bold uppercase tracking-wide text-stone-500">
+            🌀 Whirlpool (po wyłączeniu palnika)
+          </div>
+          {whirlpoolHops.map((h, i) => {
+            const hop = hopById.get(h.hopId);
+            return (
+              <div
+                key={i}
+                className="flex items-center gap-3 rounded-xl border border-cyan-200 bg-cyan-50 px-3 py-2 text-sm"
+              >
+                <span className="min-w-0 flex-1 truncate">
+                  <b>{hop?.name ?? "?"}</b> · {h.grams} g
+                </span>
+                <span className="text-xs font-semibold text-cyan-700">{h.time} min w ~80°C</span>
+              </div>
+            );
+          })}
+        </>
+      )}
     </div>
   );
 }
@@ -308,6 +336,40 @@ function FermentationLog({
   );
 }
 
+function WaterPlanBox({ recipe }: { recipe: Recipe }) {
+  const grainKg = recipe.malts.reduce((s, m) => {
+    const malt = maltById.get(m.maltId);
+    return malt && malt.type !== "dodatek" ? s + m.kg : s;
+  }, 0);
+  if (grainKg <= 0) return null;
+  const water = calcWater(grainKg, recipe.batchL, getMashRatio(recipe), getBoilMinutes(recipe));
+  return (
+    <div className="rounded-xl bg-sky-50 px-4 py-3 text-sm text-sky-900">
+      💧 Woda zacierna: <b>{water.mashL.toFixed(1)} L</b> ({getMashRatio(recipe)} L/kg · zasyp{" "}
+      {grainKg.toFixed(2)} kg) · wysładzanie: <b>{water.spargeL.toFixed(1)} L</b> · przed gotowaniem:{" "}
+      <b>{water.preBoilL.toFixed(1)} L</b>
+    </div>
+  );
+}
+
+function DryHopBox({ recipe }: { recipe: Recipe }) {
+  const dryHops = recipe.hops.filter((h) => h.use === "dryhop");
+  if (dryHops.length === 0) return null;
+  return (
+    <div className="rounded-xl bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
+      <div className="font-semibold">❄️ Chmielenie na zimno</div>
+      {dryHops.map((h, i) => {
+        const hop = hopById.get(h.hopId);
+        return (
+          <div key={i}>
+            {hop?.name ?? "?"} · {h.grams} g przez {h.time} {h.time === 1 ? "dzień" : "dni"}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 type Phase = "mash" | "boil" | "ferment";
 
 export function BrewDayView({
@@ -386,6 +448,7 @@ export function BrewDayView({
 
       {phase === "mash" && (
         <div className="animate-fade-in space-y-3">
+          <WaterPlanBox recipe={recipe} />
           {recipe.mashSteps.length === 0 && (
             <p className="text-sm text-stone-500">Ta receptura nie ma zdefiniowanych przerw zacierania.</p>
           )}
@@ -406,6 +469,7 @@ export function BrewDayView({
 
       {phase === "ferment" && (
         <div className="animate-fade-in space-y-3">
+          <DryHopBox recipe={recipe} />
           {yeast && (
             <div className="rounded-xl bg-blue-50 px-4 py-3 text-sm text-blue-900">
               🧫 {yeast.name}: fermentuj w {yeast.tempMin}–{yeast.tempMax}°C, oczekiwane odfermentowanie ~

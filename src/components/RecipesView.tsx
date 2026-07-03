@@ -2,8 +2,16 @@ import { useMemo, useState } from "react";
 import { HOPS } from "@/data/hops";
 import { MALTS } from "@/data/malts";
 import { YEASTS } from "@/data/yeasts";
-import type { Recipe } from "@/types";
-import { ebcToColor, formatGravity, recipeStats } from "@/utils/brewCalc";
+import type { HopUse, Recipe } from "@/types";
+import { downloadBeerXML, recipeToBeerXML } from "@/utils/beerxml";
+import {
+  calcWater,
+  ebcToColor,
+  formatGravity,
+  getBoilMinutes,
+  getMashRatio,
+  recipeStats,
+} from "@/utils/brewCalc";
 import { cn } from "@/utils/cn";
 
 const maltById = new Map(MALTS.map((m) => [m.id, m]));
@@ -142,7 +150,7 @@ function RecipeEditor({
           placeholder="Styl (np. American IPA)"
           className="w-full rounded-lg border border-amber-200 bg-white px-3 py-2 text-sm outline-none focus:border-amber-500"
         />
-        <div className="flex gap-4 text-sm">
+        <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm">
           <label className="flex items-center gap-2">
             Warka
             <NumInput value={recipe.batchL} onChange={(v) => set({ batchL: v })} step={0.5} />L
@@ -150,6 +158,16 @@ function RecipeEditor({
           <label className="flex items-center gap-2">
             Wydajność
             <NumInput value={recipe.efficiency} onChange={(v) => set({ efficiency: v })} step={1} />%
+          </label>
+          <label className="flex items-center gap-2">
+            Gotowanie
+            <NumInput value={getBoilMinutes(recipe)} onChange={(v) => set({ boilMinutes: v })} step={5} />
+            min
+          </label>
+          <label className="flex items-center gap-2">
+            Zacier
+            <NumInput value={getMashRatio(recipe)} onChange={(v) => set({ mashRatio: v })} step={0.5} className="w-16" />
+            L/kg
           </label>
         </div>
       </div>
@@ -211,61 +229,62 @@ function RecipeEditor({
       {/* Chmielenie */}
       <div className="space-y-3 rounded-2xl bg-white/80 p-4 shadow-sm">
         <SectionTitle>🌿 Chmielenie</SectionTitle>
-        {recipe.hops.map((rh, i) => (
-          <div key={i} className="flex items-center gap-2">
-            <select
-              value={rh.hopId}
-              onChange={(e) => {
-                const hops = [...recipe.hops];
-                hops[i] = { ...rh, hopId: e.target.value };
-                set({ hops });
-              }}
-              className="min-w-0 flex-1 rounded-lg border border-amber-200 bg-white px-2 py-1.5 text-sm outline-none focus:border-amber-500"
-            >
-              {HOPS.map((h) => (
-                <option key={h.id} value={h.id}>
-                  {h.name} (α {h.alpha}%)
-                </option>
-              ))}
-            </select>
-            <NumInput
-              value={rh.grams}
-              onChange={(v) => {
-                const hops = [...recipe.hops];
-                hops[i] = { ...rh, grams: v };
-                set({ hops });
-              }}
-              step={1}
-              className="w-16"
-            />
-            <span className="text-xs text-stone-500">g</span>
-            <NumInput
-              value={rh.time}
-              onChange={(v) => {
-                const hops = [...recipe.hops];
-                hops[i] = { ...rh, time: v };
-                set({ hops });
-              }}
-              step={5}
-              className="w-16"
-            />
-            <span className="text-xs text-stone-500">min</span>
-            <button
-              onClick={() => set({ hops: recipe.hops.filter((_, j) => j !== i) })}
-              className="text-stone-400 hover:text-red-500"
-              aria-label="Usuń chmiel"
-            >
-              ✕
-            </button>
-          </div>
-        ))}
+        {recipe.hops.map((rh, i) => {
+          const use = rh.use ?? "boil";
+          const patchHop = (patch: Partial<typeof rh>) => {
+            const hops = [...recipe.hops];
+            hops[i] = { ...rh, ...patch };
+            set({ hops });
+          };
+          return (
+            <div key={i} className="space-y-1.5 rounded-xl border border-amber-100 bg-amber-50/40 p-2">
+              <div className="flex items-center gap-2">
+                <select
+                  value={rh.hopId}
+                  onChange={(e) => patchHop({ hopId: e.target.value })}
+                  className="min-w-0 flex-1 rounded-lg border border-amber-200 bg-white px-2 py-1.5 text-sm outline-none focus:border-amber-500"
+                >
+                  {HOPS.map((h) => (
+                    <option key={h.id} value={h.id}>
+                      {h.name} (α {h.alpha}%)
+                    </option>
+                  ))}
+                </select>
+                <button
+                  onClick={() => set({ hops: recipe.hops.filter((_, j) => j !== i) })}
+                  className="text-stone-400 hover:text-red-500"
+                  aria-label="Usuń chmiel"
+                >
+                  ✕
+                </button>
+              </div>
+              <div className="flex items-center gap-2">
+                <select
+                  value={use}
+                  onChange={(e) => patchHop({ use: e.target.value as HopUse, time: e.target.value === "dryhop" ? 4 : rh.time })}
+                  className="rounded-lg border border-amber-200 bg-white px-2 py-1.5 text-sm outline-none focus:border-amber-500"
+                >
+                  <option value="boil">🔥 Gotowanie</option>
+                  <option value="whirlpool">🌀 Whirlpool</option>
+                  <option value="dryhop">❄️ Na zimno</option>
+                </select>
+                <NumInput value={rh.grams} onChange={(v) => patchHop({ grams: v })} step={1} className="w-16" />
+                <span className="text-xs text-stone-500">g</span>
+                <NumInput value={rh.time} onChange={(v) => patchHop({ time: v })} step={use === "dryhop" ? 1 : 5} className="w-16" />
+                <span className="text-xs text-stone-500">{use === "dryhop" ? "dni" : "min"}</span>
+              </div>
+            </div>
+          );
+        })}
         <button
-          onClick={() => set({ hops: [...recipe.hops, { hopId: HOPS[0].id, grams: 20, time: 60 }] })}
+          onClick={() => set({ hops: [...recipe.hops, { hopId: HOPS[0].id, grams: 20, time: 60, use: "boil" }] })}
           className="w-full rounded-lg border border-dashed border-amber-300 py-2 text-sm font-medium text-amber-700 hover:bg-amber-50"
         >
           + Dodaj chmiel
         </button>
-        <p className="text-xs text-stone-400">Czas 0 min = dodatek na wyłączeniu / whirlpool (nie wnosi IBU).</p>
+        <p className="text-xs text-stone-400">
+          Whirlpool liczy ok. 50% wykorzystania alfa-kwasów; chmielenie na zimno nie wnosi IBU.
+        </p>
       </div>
 
       {/* Drożdże */}
@@ -339,6 +358,9 @@ function RecipeEditor({
         </button>
       </div>
 
+      {/* Woda */}
+      <WaterSection recipe={recipe} />
+
       {/* Notatki */}
       <div className="space-y-2 rounded-2xl bg-white/80 p-4 shadow-sm">
         <SectionTitle>📝 Notatki</SectionTitle>
@@ -350,6 +372,47 @@ function RecipeEditor({
           className="w-full resize-y rounded-lg border border-amber-200 bg-white px-3 py-2 text-sm outline-none focus:border-amber-500"
         />
       </div>
+
+      <button
+        onClick={() => downloadBeerXML(recipeToBeerXML(recipe, maltById, hopById, yeastById), recipe.name)}
+        className="w-full rounded-2xl border border-amber-300 bg-white/80 py-3 text-sm font-semibold text-amber-800 shadow-sm hover:bg-amber-50"
+      >
+        ⬇️ Eksportuj do BeerXML
+      </button>
+    </div>
+  );
+}
+
+function WaterSection({ recipe }: { recipe: Recipe }) {
+  const grainKg = recipe.malts.reduce((s, m) => {
+    const malt = maltById.get(m.maltId);
+    return malt && malt.type !== "dodatek" ? s + m.kg : s;
+  }, 0);
+  const water = calcWater(grainKg, recipe.batchL, getMashRatio(recipe), getBoilMinutes(recipe));
+  const rows = [
+    { label: "Woda zacierna", value: water.mashL, hint: `${getMashRatio(recipe)} L/kg zasypu` },
+    { label: "Wysładzanie", value: water.spargeL, hint: `młóto chłonie ~${water.absorptionL.toFixed(1)} L` },
+    { label: "Przed gotowaniem", value: water.preBoilL, hint: `odparowanie ~${water.evapL.toFixed(1)} L + 1 L strat` },
+    { label: "Łącznie wody", value: water.totalL, hint: "" },
+  ];
+  return (
+    <div className="space-y-2 rounded-2xl bg-white/80 p-4 shadow-sm">
+      <SectionTitle>💧 Woda</SectionTitle>
+      {grainKg <= 0 ? (
+        <p className="text-sm text-stone-500">Dodaj słody do zasypu, aby wyliczyć wodę.</p>
+      ) : (
+        <div className="space-y-1">
+          {rows.map((r) => (
+            <div key={r.label} className="flex items-baseline justify-between text-sm">
+              <span className="text-stone-600">{r.label}</span>
+              <span className="text-right">
+                <b className="text-stone-800">{r.value.toFixed(1)} L</b>
+                {r.hint && <span className="ml-2 text-xs text-stone-400">{r.hint}</span>}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

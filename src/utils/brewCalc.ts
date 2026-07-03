@@ -1,4 +1,4 @@
-import type { Hop, Malt, Recipe } from "@/types";
+import type { Hop, HopUse, Malt, Recipe } from "@/types";
 
 /**
  * Kalkulatory piwowarskie (jednostki metryczne).
@@ -35,18 +35,62 @@ export interface HopAddition {
   hop: Hop;
   grams: number;
   time: number;
+  use: HopUse;
 }
 
-/** IBU wg formuły Tinsetha. */
+/** Whirlpool (~80°C) daje ok. połowę wykorzystania alfa-kwasów z gotowania. */
+const WHIRLPOOL_UTILIZATION_FACTOR = 0.5;
+
+/** IBU wg formuły Tinsetha; whirlpool z obniżonym wykorzystaniem, chmielenie na zimno = 0 IBU. */
 export function calcIBU(additions: HopAddition[], og: number, batchL: number): number {
   if (batchL <= 0) return 0;
   const bignessFactor = 1.65 * Math.pow(0.000125, og - 1);
-  return additions.reduce((sum, { hop, grams, time }) => {
+  return additions.reduce((sum, { hop, grams, time, use }) => {
+    if (use === "dryhop") return sum;
     const boilTimeFactor = (1 - Math.exp(-0.04 * time)) / 4.15;
-    const utilization = bignessFactor * boilTimeFactor;
+    const useFactor = use === "whirlpool" ? WHIRLPOOL_UTILIZATION_FACTOR : 1;
+    const utilization = bignessFactor * boilTimeFactor * useFactor;
     const mgAlphaPerL = (hop.alpha / 100) * grams * 1000 / batchL;
     return sum + utilization * mgAlphaPerL;
   }, 0);
+}
+
+export function getBoilMinutes(recipe: Recipe): number {
+  if (recipe.boilMinutes && recipe.boilMinutes > 0) return recipe.boilMinutes;
+  return Math.max(60, ...recipe.hops.filter((h) => (h.use ?? "boil") === "boil").map((h) => h.time));
+}
+
+export function getMashRatio(recipe: Recipe): number {
+  return recipe.mashRatio && recipe.mashRatio > 0 ? recipe.mashRatio : 3;
+}
+
+/** Absorpcja wody przez młóto (L/kg). */
+const GRAIN_ABSORPTION_L_PER_KG = 0.9;
+/** Tempo odparowania podczas gotowania (L/h). */
+const EVAPORATION_L_PER_H = 2.5;
+/** Strata na osadzie i przelewach (L). */
+const TRUB_LOSS_L = 1;
+
+export interface WaterPlan {
+  /** Woda zacierna (L) */
+  mashL: number;
+  /** Woda na wysładzanie (L) */
+  spargeL: number;
+  /** Objętość przed gotowaniem (L) */
+  preBoilL: number;
+  /** Łączna woda (L) */
+  totalL: number;
+  absorptionL: number;
+  evapL: number;
+}
+
+export function calcWater(grainKg: number, batchL: number, mashRatio: number, boilMinutes: number): WaterPlan {
+  const mashL = grainKg * mashRatio;
+  const absorptionL = grainKg * GRAIN_ABSORPTION_L_PER_KG;
+  const evapL = EVAPORATION_L_PER_H * (boilMinutes / 60);
+  const preBoilL = batchL + evapL + TRUB_LOSS_L;
+  const spargeL = Math.max(0, preBoilL - (mashL - absorptionL));
+  return { mashL, spargeL, preBoilL, totalL: mashL + spargeL, absorptionL, evapL };
 }
 
 /** Barwa piwa w EBC wg formuły Moreya. */
@@ -98,7 +142,7 @@ export function recipeStats(
     .map((m) => ({ malt: maltById.get(m.maltId), kg: m.kg }))
     .filter((g): g is GristItem => !!g.malt && g.kg > 0);
   const additions: HopAddition[] = recipe.hops
-    .map((h) => ({ hop: hopById.get(h.hopId), grams: h.grams, time: h.time }))
+    .map((h) => ({ hop: hopById.get(h.hopId), grams: h.grams, time: h.time, use: h.use ?? ("boil" as const) }))
     .filter((a): a is HopAddition => !!a.hop && a.grams > 0);
 
   const og = calcOG(grist, recipe.batchL, recipe.efficiency);
