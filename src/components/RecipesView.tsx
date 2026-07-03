@@ -1,7 +1,5 @@
 import { useMemo, useRef, useState } from "react";
-import { HOPS } from "@/data/hops";
-import { MALTS } from "@/data/malts";
-import { YEASTS } from "@/data/yeasts";
+import { useIngredients } from "@/ingredients";
 import type { HopUse, Recipe } from "@/types";
 import { downloadBeerXML, parseBeerXML, recipeToBeerXML } from "@/utils/beerxml";
 import {
@@ -13,10 +11,6 @@ import {
   recipeStats,
 } from "@/utils/brewCalc";
 import { cn } from "@/utils/cn";
-
-const maltById = new Map(MALTS.map((m) => [m.id, m]));
-const hopById = new Map(HOPS.map((h) => [h.id, h]));
-const yeastById = new Map(YEASTS.map((y) => [y.id, y]));
 
 export function newRecipeId() {
   return `r-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
@@ -38,10 +32,11 @@ function emptyRecipe(): Recipe {
 }
 
 function useStats(recipe: Recipe) {
+  const { maltById, hopById, yeastById } = useIngredients();
   return useMemo(() => {
     const attenuation = recipe.yeastId ? yeastById.get(recipe.yeastId)?.attenuation ?? 75 : 75;
     return recipeStats(recipe, maltById, hopById, attenuation);
-  }, [recipe]);
+  }, [recipe, maltById, hopById, yeastById]);
 }
 
 function StatsBar({ recipe }: { recipe: Recipe }) {
@@ -116,6 +111,7 @@ function RecipeEditor({
   onClose: () => void;
   onDelete: () => void;
 }) {
+  const { malts: MALTS, hops: HOPS, yeasts: YEASTS, maltById, hopById, yeastById } = useIngredients();
   const set = (patch: Partial<Recipe>) => onChange({ ...recipe, ...patch });
   const stats = useStats(recipe);
 
@@ -406,6 +402,7 @@ function RecipeEditor({
 }
 
 function WaterSection({ recipe }: { recipe: Recipe }) {
+  const { maltById } = useIngredients();
   const grainKg = recipe.malts.reduce((s, m) => {
     const malt = maltById.get(m.maltId);
     return malt && malt.type !== "dodatek" ? s + m.kg : s;
@@ -448,11 +445,24 @@ export function RecipesView({
 }) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { malts, hops, yeasts, maltById, hopById, yeastById, setCustom } = useIngredients();
   const editing = recipes.find((r) => r.id === editingId);
 
   const importFile = async (file: File) => {
     try {
-      const { recipe, warnings } = parseBeerXML(await file.text(), MALTS, HOPS, YEASTS);
+      const { recipe, warnings, newMalts, newHops, newYeasts } = parseBeerXML(
+        await file.text(),
+        malts,
+        hops,
+        yeasts
+      );
+      if (newMalts.length + newHops.length + newYeasts.length > 0) {
+        setCustom((prev) => ({
+          malts: [...prev.malts, ...newMalts],
+          hops: [...prev.hops, ...newHops],
+          yeasts: [...prev.yeasts, ...newYeasts],
+        }));
+      }
       if (warnings.length > 0) {
         recipe.notes = [recipe.notes, `Import BeerXML — dopasowania:\n${warnings.join("\n")}`]
           .filter(Boolean)

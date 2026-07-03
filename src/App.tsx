@@ -4,6 +4,7 @@ import { IngredientsView } from "@/components/IngredientsView";
 import { RecipesView } from "@/components/RecipesView";
 import { ToolsView } from "@/components/ToolsView";
 import { SAMPLE_RECIPES } from "@/data/sampleRecipes";
+import { IngredientsProvider } from "@/ingredients";
 import type { BrewSession, Recipe } from "@/types";
 import { cn } from "@/utils/cn";
 import { useLocalStorage } from "@/utils/useLocalStorage";
@@ -23,6 +24,7 @@ export default function App() {
   const [sessions, setSessions] = useLocalStorage<BrewSession[]>("warzelnik.sessions", []);
 
   return (
+    <IngredientsProvider>
     <div className="min-h-screen bg-gradient-to-b from-amber-100 via-orange-50 to-stone-100 font-[Inter]">
       <header className="sticky top-0 z-20 bg-gradient-to-r from-amber-900 to-amber-700 px-4 pb-3 pt-[calc(env(safe-area-inset-top)+0.75rem)] text-white shadow-lg">
         <div className="mx-auto flex max-w-lg items-center gap-2">
@@ -59,5 +61,6 @@ export default function App() {
         </div>
       </nav>
     </div>
+    </IngredientsProvider>
   );
 }

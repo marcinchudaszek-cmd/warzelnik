@@ -1,7 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { HOPS } from "@/data/hops";
-import { MALTS } from "@/data/malts";
-import { YEASTS } from "@/data/yeasts";
+import { useIngredients } from "@/ingredients";
 import type { BrewSession, Recipe } from "@/types";
 import {
   calcABV,
@@ -13,10 +11,6 @@ import {
   sgToPlato,
 } from "@/utils/brewCalc";
 import { cn } from "@/utils/cn";
-
-const hopById = new Map(HOPS.map((h) => [h.id, h]));
-const maltById = new Map(MALTS.map((m) => [m.id, m]));
-const yeastById = new Map(YEASTS.map((y) => [y.id, y]));
 
 function beep() {
   try {
@@ -113,6 +107,7 @@ function Timer({ minutes, label }: { minutes: number; label: string }) {
 }
 
 function BoilAssistant({ recipe }: { recipe: Recipe }) {
+  const { hopById } = useIngredients();
   const boilMinutes = getBoilMinutes(recipe);
   const boilHops = recipe.hops.filter((h) => (h.use ?? "boil") === "boil");
   const whirlpoolHops = recipe.hops.filter((h) => h.use === "whirlpool");
@@ -398,6 +393,7 @@ function FermentationLog({
 }
 
 function WaterPlanBox({ recipe }: { recipe: Recipe }) {
+  const { maltById } = useIngredients();
   const grainKg = recipe.malts.reduce((s, m) => {
     const malt = maltById.get(m.maltId);
     return malt && malt.type !== "dodatek" ? s + m.kg : s;
@@ -414,6 +410,7 @@ function WaterPlanBox({ recipe }: { recipe: Recipe }) {
 }
 
 function DryHopBox({ recipe }: { recipe: Recipe }) {
+  const { hopById } = useIngredients();
   const dryHops = recipe.hops.filter((h) => h.use === "dryhop");
   if (dryHops.length === 0) return null;
   return (
@@ -510,6 +507,7 @@ export function BrewDayView({
 }) {
   const [recipeId, setRecipeId] = useState<string>(recipes[0]?.id ?? "");
   const [phase, setPhase] = useState<Phase>("mash");
+  const { maltById, hopById, yeastById } = useIngredients();
   const recipe = recipes.find((r) => r.id === recipeId) ?? recipes[0];
 
   if (!recipe) {
