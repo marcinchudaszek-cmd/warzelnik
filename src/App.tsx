@@ -40,7 +40,9 @@ export default function App() {
         {view === "ingredients" && <IngredientsView />}
         {view === "recipes" && <RecipesView recipes={recipes} setRecipes={setRecipes} />}
         {view === "brewday" && <BrewDayView recipes={recipes} sessions={sessions} setSessions={setSessions} />}
-        {view === "tools" && <ToolsView />}
+        {view === "tools" && (
+          <ToolsView recipes={recipes} setRecipes={setRecipes} sessions={sessions} setSessions={setSessions} />
+        )}
       </main>
 
       <nav className="fixed inset-x-0 bottom-0 z-20 border-t border-amber-200 bg-white/90 pb-[env(safe-area-inset-bottom)] backdrop-blur-sm">
