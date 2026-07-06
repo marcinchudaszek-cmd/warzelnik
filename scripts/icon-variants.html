@@ -1,0 +1,132 @@
+<!doctype html>
+<html>
+<head><meta charset="UTF-8"><style>body{margin:0;display:flex;flex-wrap:wrap;background:#ddd}</style></head>
+<body>
+
+<!-- WARIANT A: Kufel premium - gradient, polysk, bąbelki -->
+<svg id="A" width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="a-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#92400E"/><stop offset="1" stop-color="#451A03"/>
+    </linearGradient>
+    <linearGradient id="a-beer" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#FCD34D"/><stop offset="0.5" stop-color="#F59E0B"/><stop offset="1" stop-color="#D97706"/>
+    </linearGradient>
+    <linearGradient id="a-glass" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.35"/><stop offset="0.25" stop-color="#FFFFFF" stop-opacity="0.05"/><stop offset="1" stop-color="#FFFFFF" stop-opacity="0.12"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" fill="url(#a-bg)"/>
+  <!-- ucho -->
+  <path d="M 330 220 h 30 a 55 55 0 0 1 0 110 h -30 v -34 h 26 a 21 21 0 0 0 0 -42 h -26 z" fill="#FDE68A"/>
+  <!-- szklo -->
+  <rect x="150" y="170" width="185" height="220" rx="18" fill="url(#a-beer)"/>
+  <rect x="150" y="170" width="185" height="220" rx="18" fill="url(#a-glass)"/>
+  <!-- bąbelki -->
+  <circle cx="195" cy="330" r="8" fill="#FDE68A" opacity="0.7"/>
+  <circle cx="225" cy="290" r="5" fill="#FDE68A" opacity="0.6"/>
+  <circle cx="205" cy="250" r="6" fill="#FDE68A" opacity="0.5"/>
+  <circle cx="285" cy="310" r="6" fill="#FDE68A" opacity="0.6"/>
+  <circle cx="300" cy="255" r="4" fill="#FDE68A" opacity="0.5"/>
+  <!-- piana -->
+  <g fill="#FFFBEB">
+    <circle cx="170" cy="168" r="30"/>
+    <circle cx="212" cy="148" r="38"/>
+    <circle cx="262" cy="142" r="40"/>
+    <circle cx="310" cy="158" r="32"/>
+    <rect x="150" y="150" width="185" height="38" rx="18"/>
+    <ellipse cx="176" cy="205" rx="13" ry="26"/>
+    <ellipse cx="322" cy="198" rx="10" ry="18"/>
+  </g>
+  <ellipse cx="196" cy="150" rx="12" ry="7" fill="#FFFFFF"/>
+</svg>
+
+<!-- WARIANT B: Szyszka chmielu -->
+<svg id="B" width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="b-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#3F6212"/><stop offset="1" stop-color="#1A2E05"/>
+    </linearGradient>
+    <linearGradient id="b-leaf" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#BEF264"/><stop offset="1" stop-color="#65A30D"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" fill="url(#b-bg)"/>
+  <g transform="translate(256,150)">
+    <path d="M 0 -30 C 18 -18 18 6 0 18 C -18 6 -18 -18 0 -30 Z" fill="#84CC16"/>
+    <!-- warstwy łusek -->
+    <g fill="url(#b-leaf)" stroke="#4D7C0F" stroke-width="4">
+      <path d="M -8 -6 C -60 -2 -78 40 -62 78 C -30 88 -4 66 -2 20 Z"/>
+      <path d="M 8 -6 C 60 -2 78 40 62 78 C 30 88 4 66 2 20 Z"/>
+      <path d="M -6 30 C -52 40 -62 86 -44 122 C -14 128 6 100 4 56 Z"/>
+      <path d="M 6 30 C 52 40 62 86 44 122 C 14 128 -6 100 -4 56 Z"/>
+      <path d="M -4 78 C -38 92 -40 136 -22 162 C 2 166 14 138 10 100 Z"/>
+      <path d="M 4 78 C 38 92 40 136 22 162 C -2 166 -14 138 -10 100 Z"/>
+      <path d="M 0 120 C -22 138 -18 176 0 196 C 18 176 22 138 0 120 Z"/>
+    </g>
+  </g>
+</svg>
+
+<!-- WARIANT C: Kufel + liść chmielu -->
+<svg id="C" width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="c-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#B45309"/><stop offset="1" stop-color="#78350F"/>
+    </linearGradient>
+    <linearGradient id="c-beer" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FCD34D"/><stop offset="1" stop-color="#D97706"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" fill="url(#c-bg)"/>
+  <!-- kufel przechylony w prawo -->
+  <g transform="translate(238,268) rotate(8)">
+    <path d="M 78 -60 h 26 a 48 48 0 0 1 0 96 h -26 v -30 h 22 a 18 18 0 0 0 0 -36 h -22 z" fill="#FFFBEB"/>
+    <rect x="-82" y="-90" width="164" height="180" rx="16" fill="url(#c-beer)"/>
+    <rect x="-58" y="-70" width="14" height="140" rx="7" fill="#B45309" opacity="0.5"/>
+    <rect x="-8" y="-70" width="14" height="140" rx="7" fill="#B45309" opacity="0.5"/>
+    <rect x="42" y="-70" width="14" height="140" rx="7" fill="#B45309" opacity="0.5"/>
+    <g fill="#FFFBEB">
+      <circle cx="-62" cy="-92" r="26"/>
+      <circle cx="-20" cy="-108" r="32"/>
+      <circle cx="28" cy="-102" r="30"/>
+      <circle cx="62" cy="-88" r="22"/>
+      <rect x="-82" y="-104" width="164" height="30" rx="15"/>
+      <ellipse cx="-70" cy="-58" rx="11" ry="20"/>
+    </g>
+  </g>
+  <!-- listek chmielu w rogu -->
+  <g transform="translate(130,120) rotate(-20)">
+    <path d="M 0 -44 C 40 -30 46 14 24 44 C 8 52 -8 52 -24 44 C -46 14 -40 -30 0 -44 Z" fill="#84CC16" stroke="#4D7C0F" stroke-width="6"/>
+    <line x1="0" y1="-30" x2="0" y2="40" stroke="#4D7C0F" stroke-width="6"/>
+    <line x1="0" y1="-4" x2="-18" y2="16" stroke="#4D7C0F" stroke-width="5"/>
+    <line x1="0" y1="-4" x2="18" y2="16" stroke="#4D7C0F" stroke-width="5"/>
+  </g>
+</svg>
+
+<!-- WARIANT D: Minimalistyczny - sylwetka kufla, płaski, duzy -->
+<svg id="D" width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="d-bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#F59E0B"/><stop offset="1" stop-color="#B45309"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" fill="url(#d-bg)"/>
+  <g fill="#FFFFFF">
+    <!-- piana -->
+    <circle cx="172" cy="156" r="34"/>
+    <circle cx="228" cy="136" r="42"/>
+    <circle cx="288" cy="142" r="38"/>
+    <circle cx="330" cy="164" r="28"/>
+    <rect x="140" y="152" width="216" height="44" rx="22"/>
+    <!-- szklo (obrys) -->
+    <path d="M 156 200 h 184 a 12 12 0 0 1 12 12 v 148 a 28 28 0 0 1 -28 28 h -152 a 28 28 0 0 1 -28 -28 v -148 a 12 12 0 0 1 12 -12 z"
+          fill="none" stroke="#FFFFFF" stroke-width="26"/>
+    <!-- ucho -->
+    <path d="M 352 232 h 22 a 52 52 0 0 1 0 104 h -22 v -30 h 18 a 22 22 0 0 0 0 -44 h -18 z"/>
+    <!-- kapiaca piana -->
+    <ellipse cx="180" cy="222" rx="14" ry="26"/>
+  </g>
+</svg>
+
+</body>
+</html>
