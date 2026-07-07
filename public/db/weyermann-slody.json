@@ -1,0 +1,22 @@
+{
+  "malts": [
+    { "name": "Weyermann Pilsner", "ebc": 3.5, "extract": 81, "maxPercent": 100, "description": "Klasyczny niemiecki słód pilzneński — delikatny, słodowy. Baza wszystkich jasnych lagerów." },
+    { "name": "Weyermann Barke Pilsner", "ebc": 3.8, "extract": 80, "maxPercent": 100, "description": "Z tradycyjnej odmiany jęczmienia Barke — pełniejszy, bardziej słodowy profil niż zwykły pilzneński." },
+    { "name": "Weyermann Pale Ale", "ebc": 7, "extract": 81, "maxPercent": 100, "description": "Baza do piw górnej fermentacji, lekko biszkoptowa." },
+    { "name": "Weyermann Vienna", "ebc": 8, "extract": 80, "maxPercent": 100, "description": "Złocisty, tostowy. Do wiedeńskich lagerów, märzenów i festbierów." },
+    { "name": "Weyermann Munich I", "ebc": 15, "extract": 79, "maxPercent": 100, "description": "Jasny monachijski — chlebowy, słodowy. Uniwersalny do ciemniejszych lagerów." },
+    { "name": "Weyermann Munich II", "ebc": 25, "extract": 78, "maxPercent": 80, "description": "Ciemniejszy monachijski o intensywniejszym profilu skórki chleba." },
+    { "name": "Weyermann CaraFoam", "ebc": 4, "extract": 77, "maxPercent": 15, "description": "Bardzo jasny karmel — pełnia i piana bez zmiany koloru." },
+    { "name": "Weyermann CaraHell", "ebc": 25, "extract": 76, "maxPercent": 15, "description": "Jasny karmel — miodowa słodycz do hellesów i pszenic." },
+    { "name": "Weyermann CaraAmber", "ebc": 70, "extract": 75, "maxPercent": 12, "description": "Bursztynowy karmel — tofi i suszone owoce, do ambery i alt biera." },
+    { "name": "Weyermann CaraMunich II", "ebc": 120, "extract": 75, "maxPercent": 10, "description": "Średni karmel — wyraźne tofi, pogłębia barwę do miedzi." },
+    { "name": "Weyermann CaraMunich III", "ebc": 150, "extract": 75, "maxPercent": 10, "description": "Ciemniejsza wersja CaraMunich — mocniejszy karmel i suszona śliwka." },
+    { "name": "Weyermann CaraRed", "ebc": 50, "extract": 75, "maxPercent": 12, "description": "Nadaje czerwonawy odcień — do red ale i czerwonych lagerów." },
+    { "name": "Weyermann CaraAroma", "ebc": 350, "extract": 74, "maxPercent": 8, "description": "Ciemny karmel — rodzynki, mocne tofi. Do porterów i belgów." },
+    { "name": "Weyermann CaraBohemian", "ebc": 200, "extract": 75, "maxPercent": 10, "description": "Czeski styl karmelu — do tmavé i ciemnych lagerów." },
+    { "name": "Weyermann Melanoidin", "type": "specjalny", "ebc": 70, "extract": 76, "maxPercent": 15, "description": "Efekt dekokcji bez dekokcji — intensywnie słodowy, chlebowy." },
+    { "name": "Weyermann Carafa Special I", "type": "palony", "ebc": 900, "extract": 66, "maxPercent": 5, "description": "Palony bez łuski — łagodna czekolada i kawa bez ostrości." },
+    { "name": "Weyermann Carafa Special III", "type": "palony", "ebc": 1400, "extract": 65, "maxPercent": 5, "description": "Najciemniejszy palony bez łuski — głęboka czerń bez palonej goryczki." },
+    { "name": "Weyermann Rauchmalz (wędzony)", "type": "specjalny", "ebc": 6, "extract": 80, "maxPercent": 100, "description": "Wędzony bukiem słód z Bambergu — od nuty wędzonki po pełny rauchbier." }
+  ]
+}

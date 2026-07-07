@@ -2,6 +2,7 @@ import { useMemo, useRef, useState } from "react";
 import { HOP_TYPE_LABELS } from "@/data/hops";
 import { MALT_TYPE_LABELS } from "@/data/malts";
 import { YEAST_TYPE_LABELS } from "@/data/yeasts";
+import { OnlineDbPanel } from "@/components/OnlineDbPanel";
 import { isCustomId, newCustomId, useIngredients } from "@/ingredients";
 import type { Hop, HopType, Malt, MaltType, Yeast, YeastType } from "@/types";
 import { parseIngredientsFile } from "@/utils/beerxml";
@@ -402,6 +403,8 @@ export function IngredientsView() {
           }}
         />
       </div>
+
+      <OnlineDbPanel />
 
       {formOpen && tab === "malts" && (
         <MaltForm

@@ -219,8 +219,9 @@ function matchMalt(name: string, malts: Malt[]): Malt | undefined {
 function guessMaltType(name: string, ebc: number, isSugar: boolean): MaltType {
   if (isSugar) return "dodatek";
   const n = normalize(name);
-  if (/\b(cara|crystal|caramel)\b/.test(n) || /cara|crystal|caramel/.test(n)) return "karmelowy";
-  if (/roast|chocolate|black|palon|czekolad/.test(n) || ebc > 400) return "palony";
+  // najpierw palone (carafa zawiera "cara", więc kolejność ma znaczenie)
+  if (/roast|chocolate|black|carafa|palon|czekolad/.test(n) || ebc > 400) return "palony";
+  if (/cara|crystal|caramel/.test(n)) return "karmelowy";
   if (ebc <= 30) return "bazowy";
   return "specjalny";
 }
@@ -435,14 +436,28 @@ function attenuationPct(obj: Record<string, unknown>): number {
   return a <= 1.5 ? Math.round(a * 100) : Math.round(a);
 }
 
+function pickList(obj: Record<string, unknown>, keys: string[]): string[] {
+  const v = pick(obj, keys);
+  if (Array.isArray(v)) return v.map(String).filter(Boolean);
+  if (typeof v === "string") return v.split(",").map((s) => s.trim()).filter(Boolean);
+  return [];
+}
+
+const MALT_TYPES = ["bazowy", "karmelowy", "palony", "specjalny", "dodatek"] as const;
+const HOP_TYPES = ["goryczkowy", "aromatyczny", "uniwersalny"] as const;
+
 function jsonToMalt(obj: Record<string, unknown>): Malt {
   const name = pickStr(obj, ["name"]) || "Importowany słód";
   const ebc = colorToEbc(obj);
-  const isSugar = /sugar|extract|honey|syrup/i.test(pickStr(obj, ["type"]));
+  const typeRaw = pickStr(obj, ["type"]).toLowerCase();
+  const isSugar = /sugar|extract|honey|syrup/i.test(typeRaw);
+  const type = (MALT_TYPES as readonly string[]).includes(typeRaw)
+    ? (typeRaw as Malt["type"])
+    : guessMaltType(name, ebc, isSugar);
   return {
     id: newCustomId("malt"),
     name,
-    type: guessMaltType(name, ebc, isSugar),
+    type,
     ebc,
     extract: extractPct(obj),
     maxPercent: pickNum(obj, ["maxpercent", "maxinbatch"]) ?? 100,
@@ -452,13 +467,14 @@ function jsonToMalt(obj: Record<string, unknown>): Malt {
 
 function jsonToHop(obj: Record<string, unknown>): Hop {
   const alphaRaw = pickNum(obj, ["alpha", "alphaacid", "alpha_acid"]) ?? 5;
+  const typeRaw = pickStr(obj, ["type"]).toLowerCase();
   return {
     id: newCustomId("hop"),
     name: pickStr(obj, ["name"]) || "Importowany chmiel",
     origin: pickStr(obj, ["origin", "country"]) || "—",
     alpha: Math.round(alphaRaw * 10) / 10,
-    type: "uniwersalny",
-    aromas: [],
+    type: (HOP_TYPES as readonly string[]).includes(typeRaw) ? (typeRaw as Hop["type"]) : "uniwersalny",
+    aromas: pickList(obj, ["aromas", "aroma", "flavors"]),
     description: pickStr(obj, ["description", "notes"]) || "Zaimportowany z pliku.",
   };
 }
@@ -473,7 +489,7 @@ function jsonToYeast(obj: Record<string, unknown>): Yeast {
     attenuation: attenuationPct(obj),
     tempMin: pickNum(obj, ["tempmin", "mintemp", "min_temperature", "mintemperature"]) ?? 15,
     tempMax: pickNum(obj, ["tempmax", "maxtemp", "max_temperature", "maxtemperature"]) ?? 22,
-    styles: [],
+    styles: pickList(obj, ["styles", "beerstyles"]),
     description: pickStr(obj, ["description", "notes"]) || "Zaimportowane z pliku.",
   };
 }
