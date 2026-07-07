@@ -1,0 +1,24 @@
+{
+  "hops": [
+    { "name": "Strata", "alpha": 12.5, "origin": "USA", "type": "uniwersalny", "aromas": ["marakuja", "truskawka", "cannabis"], "description": "Oregońska gwiazda: tropikalne owoce z ziołowo-żywicznym tłem. Świetny do IPA i hazy." },
+    { "name": "Idaho 7", "alpha": 13, "origin": "USA", "type": "uniwersalny", "aromas": ["ananas", "morela", "czarna herbata"], "description": "Soczysty, tropikalno-herbaciany. Do NEIPA i mocno chmielonych pale ale." },
+    { "name": "El Dorado", "alpha": 15, "origin": "USA", "type": "uniwersalny", "aromas": ["gruszka", "arbuz", "cukierki owocowe"], "description": "Słodkie, cukierkowe owoce. Charakterystyczny w new england IPA." },
+    { "name": "Ekuanot", "alpha": 14.5, "origin": "USA", "type": "uniwersalny", "aromas": ["limonka", "papryka", "melon"], "description": "Złożony: cytrusy, zielona papryka, owoce tropikalne." },
+    { "name": "Azacca", "alpha": 14, "origin": "USA", "type": "aromatyczny", "aromas": ["mango", "papaja", "cytrus"], "description": "Intensywnie tropikalny — mango i papaja. Do IPA na późne chmielenie." },
+    { "name": "Cashmere", "alpha": 8, "origin": "USA", "type": "aromatyczny", "aromas": ["melon", "limonka", "kokos"], "description": "Gładki, melonowo-cytrusowy. Miękka goryczka, dobry do lagerów nowej fali." },
+    { "name": "Loral", "alpha": 11, "origin": "USA", "type": "uniwersalny", "aromas": ["kwiatowy", "lawenda", "cytrus"], "description": "Łączy szlachetną kwiatowość z amerykańskim cytrusem." },
+    { "name": "Comet", "alpha": 10, "origin": "USA", "type": "uniwersalny", "aromas": ["grejpfrut", "dzikie zioła"], "description": "Stara odmiana wróciła do łask: surowy grejpfrut, „dziki” charakter." },
+    { "name": "Vic Secret", "alpha": 15.5, "origin": "Australia", "type": "uniwersalny", "aromas": ["ananas", "sosna", "marakuja"], "description": "Jak Galaxy, ale bardziej sosnowy i suchy. Świetny w whirlpoolu." },
+    { "name": "Ella", "alpha": 15, "origin": "Australia", "type": "uniwersalny", "aromas": ["anyż", "kwiatowy", "grejpfrut"], "description": "Australijska siostra Galaxy — kwiatowo-anyżowa elegancja." },
+    { "name": "Enigma", "alpha": 17, "origin": "Australia", "type": "uniwersalny", "aromas": ["rodzynki", "czerwone owoce", "melon"], "description": "Nietypowy: czerwone winogrona i melon. Do piw eksperymentalnych." },
+    { "name": "Riwaka", "alpha": 5.5, "origin": "Nowa Zelandia", "type": "aromatyczny", "aromas": ["grejpfrut", "marakuja", "tropikalny"], "description": "Kultowy i trudno dostępny — eksplozja grejpfruta i tropików." },
+    { "name": "Rakau", "alpha": 10, "origin": "Nowa Zelandia", "type": "uniwersalny", "aromas": ["morela", "brzoskwinia", "żywica"], "description": "Pestkowe owoce z żywicznym tłem. Uniwersalny do IPA i APA." },
+    { "name": "Wakatu", "alpha": 7.5, "origin": "Nowa Zelandia", "type": "uniwersalny", "aromas": ["limonka", "kwiatowy", "wanilia"], "description": "Potomek Hallertau: limonkowo-kwiatowy, do lagerów i piw jasnych." },
+    { "name": "Pacific Gem", "alpha": 14, "origin": "Nowa Zelandia", "type": "goryczkowy", "aromas": ["jeżyna", "dąb"], "description": "Goryczkowy z nietypową nutą jeżyn i dębu." },
+    { "name": "Wai-iti", "alpha": 3.5, "origin": "Nowa Zelandia", "type": "aromatyczny", "aromas": ["mandarynka", "limonka", "brzoskwinia"], "description": "Niskie alfa, ogromny aromat cytrusów — idealny na duże dawki na zimno." },
+    { "name": "Iunga", "alpha": 11, "origin": "Polska", "type": "uniwersalny", "aromas": ["mango", "agrest", "trawa cytrynowa"], "description": "Polski chmiel nowej fali z programu hodowli IUNG — tropikalno-agrestowy." },
+    { "name": "Puławski", "alpha": 7.5, "origin": "Polska", "type": "uniwersalny", "aromas": ["zioła", "cytrus", "melon"], "description": "Polska odmiana o ziołowo-cytrusowym profilu, dobra do sesyjnych IPA." },
+    { "name": "Magnat", "alpha": 12.5, "origin": "Polska", "type": "goryczkowy", "aromas": ["neutralny", "ziołowy"], "description": "Polski wysokoalfowy chmiel goryczkowy — wydajna, czysta goryczka." },
+    { "name": "Oktawia", "alpha": 9, "origin": "Polska", "type": "uniwersalny", "aromas": ["owocowy", "kwiatowy"], "description": "Nowa polska odmiana o przyjemnym owocowo-kwiatowym aromacie." }
+  ]
+}

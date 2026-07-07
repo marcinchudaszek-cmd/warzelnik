@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "packs": [
+    {
+      "id": "weyermann-slody",
+      "name": "Słody Weyermann®",
+      "description": "18 słodów niemieckiej słodowni Weyermann: bazowe, karmelowe Cara…, palone Carafa i specjalne.",
+      "file": "weyermann-slody.json"
+    },
+    {
+      "id": "chmiele-nowa-fala",
+      "name": "Chmiele: nowa fala + polskie",
+      "description": "20 odmian: amerykańskie i oceaniczne nowości (Strata, Idaho 7, El Dorado…) oraz polskie (Iunga, Puławski, Magnat…).",
+      "file": "chmiele-nowa-fala.json"
+    },
+    {
+      "id": "drozdze-plynne",
+      "name": "Drożdże płynne Wyeast / White Labs",
+      "description": "14 popularnych szczepów płynnych do ale, lagerów, pszenic i piw belgijskich.",
+      "file": "drozdze-plynne.json"
+    }
+  ]
+}

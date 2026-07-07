@@ -1,0 +1,18 @@
+{
+  "yeasts": [
+    { "name": "Wyeast 1056 American Ale", "lab": "Wyeast", "type": "ale", "attenuation": 75, "tempMin": 16, "tempMax": 22, "styles": ["American IPA", "Pale Ale", "Amber"], "description": "Legendarny „Chico” — czysty, neutralny, eksponuje chmiel." },
+    { "name": "Wyeast 1968 London ESB", "lab": "Wyeast", "type": "ale", "attenuation": 69, "tempMin": 18, "tempMax": 22, "styles": ["ESB", "Bitter", "English Ale"], "description": "Mocno flokulujący angielski szczep — słodowy, owocowy, szybko się klaruje." },
+    { "name": "Wyeast 3068 Weihenstephan Weizen", "lab": "Wyeast", "type": "ale", "attenuation": 75, "tempMin": 18, "tempMax": 24, "styles": ["Hefeweizen", "Dunkelweizen"], "description": "Klasyk pszeniczny — banan i goździk w idealnej równowadze." },
+    { "name": "Wyeast 3711 French Saison", "lab": "Wyeast", "type": "ale", "attenuation": 83, "tempMin": 18, "tempMax": 30, "styles": ["Saison"], "description": "Niezawodny saison — suchy, pieprzny, fermentuje do końca bez kaprysów." },
+    { "name": "Wyeast 3787 Trappist High Gravity", "lab": "Wyeast", "type": "ale", "attenuation": 78, "tempMin": 18, "tempMax": 25, "styles": ["Dubbel", "Tripel", "Quadrupel"], "description": "Szczep z Westmalle — owocowo-korzenny, toleruje 12% alkoholu." },
+    { "name": "Wyeast 2124 Bohemian Lager", "lab": "Wyeast", "type": "lager", "attenuation": 73, "tempMin": 8, "tempMax": 13, "styles": ["Czeski pilzner", "Lager"], "description": "Czeski szczep lagerowy — miękki, słodowy profil idealny do pilznera." },
+    { "name": "Wyeast 2308 Munich Lager", "lab": "Wyeast", "type": "lager", "attenuation": 73, "tempMin": 9, "tempMax": 13, "styles": ["Helles", "Bock", "Märzen"], "description": "Monachijski klasyk — okrągły, słodowy, wymaga przerwy dwuacetylowej." },
+    { "name": "WLP001 California Ale", "lab": "White Labs", "type": "ale", "attenuation": 76, "tempMin": 20, "tempMax": 23, "styles": ["American IPA", "Pale Ale"], "description": "Odpowiednik 1056 od White Labs — czysty i uniwersalny." },
+    { "name": "WLP002 English Ale", "lab": "White Labs", "type": "ale", "attenuation": 66, "tempMin": 18, "tempMax": 20, "styles": ["Bitter", "Porter", "Mild"], "description": "Bardzo flokulujący angielski szczep — pełne, słodowe piwa." },
+    { "name": "WLP300 Hefeweizen Ale", "lab": "White Labs", "type": "ale", "attenuation": 74, "tempMin": 20, "tempMax": 22, "styles": ["Hefeweizen"], "description": "Pszeniczny z południa Niemiec — wyraźny banan." },
+    { "name": "WLP500 Monastery Ale", "lab": "White Labs", "type": "ale", "attenuation": 78, "tempMin": 18, "tempMax": 25, "styles": ["Dubbel", "Belgian Strong"], "description": "Szczep klasztorny (Chimay) — owoce, przyprawy, wysoka tolerancja." },
+    { "name": "WLP810 San Francisco Lager", "lab": "White Labs", "type": "lager", "attenuation": 68, "tempMin": 14, "tempMax": 18, "styles": ["California Common", "Pseudo-lager"], "description": "Lagerowy szczep pracujący w wyższych temperaturach — do steam beera." },
+    { "name": "Omega OYL-091 Hornindal Kveik", "lab": "Omega Yeast", "type": "ale", "attenuation": 78, "tempMin": 25, "tempMax": 37, "styles": ["IPA", "Farmhouse"], "description": "Norweski kveik — tropikalne estry, błyskawiczna fermentacja w cieple." },
+    { "name": "Omega OYL-004 West Coast Ale I", "lab": "Omega Yeast", "type": "ale", "attenuation": 78, "tempMin": 16, "tempMax": 22, "styles": ["West Coast IPA", "Stout"], "description": "Wersja kalifornijskiego klasyka — czysty profil, pewna fermentacja." }
+  ]
+}
