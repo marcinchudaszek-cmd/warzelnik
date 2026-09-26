@@ -26,3 +26,6 @@ android/build
 *.jks
 android/keystore.properties
 android/local.properties
+
+# Gotowe paczki do Google Play - nie w repo
+wydanie/

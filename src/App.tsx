@@ -25,8 +25,8 @@ export default function App() {
 
   return (
     <IngredientsProvider>
-    <div className="min-h-screen bg-gradient-to-b from-amber-100 via-orange-50 to-stone-100 font-[Inter]">
-      <header className="sticky top-0 z-20 bg-gradient-to-r from-amber-900 to-amber-700 px-4 pb-3 pt-[calc(env(safe-area-inset-top)+0.75rem)] text-white shadow-lg">
+    <div className="min-h-dvh bg-gradient-to-b from-amber-100 via-orange-50 to-stone-100 font-[Inter]">
+      <header className="sticky top-0 z-20 bg-gradient-to-r from-amber-900 to-amber-700 px-4 pb-3 pt-[calc(var(--sa-top)+0.75rem)] text-white shadow-lg">
         <div className="mx-auto flex max-w-lg items-center gap-2">
           <span className="text-2xl">🍺</span>
           <div>
@@ -45,7 +45,7 @@ export default function App() {
         )}
       </main>
 
-      <nav className="fixed inset-x-0 bottom-0 z-20 border-t border-amber-200 bg-white/90 pb-[env(safe-area-inset-bottom)] backdrop-blur-sm">
+      <nav className="fixed inset-x-0 bottom-0 z-20 border-t border-amber-200 bg-white/90 pb-[var(--sa-bottom)] backdrop-blur-sm">
         <div className="mx-auto flex max-w-lg">
           {NAV.map((n) => (
             <button
