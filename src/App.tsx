@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { BrewDayView } from "@/components/BrewDayView";
+import { DiyDogView } from "@/components/DiyDogView";
 import { IngredientsView } from "@/components/IngredientsView";
 import { RecipesView } from "@/components/RecipesView";
 import { ToolsView } from "@/components/ToolsView";
@@ -9,11 +10,12 @@ import type { BrewSession, Recipe } from "@/types";
 import { cn } from "@/utils/cn";
 import { useLocalStorage } from "@/utils/useLocalStorage";
 
-type View = "ingredients" | "recipes" | "brewday" | "tools";
+type View = "ingredients" | "recipes" | "diydog" | "brewday" | "tools";
 
 const NAV: { id: View; label: string; icon: string }[] = [
   { id: "ingredients", label: "Składniki", icon: "🌾" },
   { id: "recipes", label: "Receptury", icon: "📖" },
+  { id: "diydog", label: "DIY Dog", icon: "🐶" },
   { id: "brewday", label: "Warzenie", icon: "🍺" },
   { id: "tools", label: "Narzędzia", icon: "🧮" },
 ];
@@ -39,6 +41,7 @@ export default function App() {
       <main className="mx-auto max-w-lg px-4 pb-28 pt-4">
         {view === "ingredients" && <IngredientsView />}
         {view === "recipes" && <RecipesView recipes={recipes} setRecipes={setRecipes} />}
+        {view === "diydog" && <DiyDogView setRecipes={setRecipes} />}
         {view === "brewday" && <BrewDayView recipes={recipes} sessions={sessions} setSessions={setSessions} />}
         {view === "tools" && (
           <ToolsView recipes={recipes} setRecipes={setRecipes} sessions={sessions} setSessions={setSessions} />
